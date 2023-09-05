@@ -1,0 +1,33 @@
+.loginPageContainer {
+}
+
+.loginContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.registerQuestionContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.credsErrMsg {
+	color: red;
+	font-size: 14px;
+}
+
+.singleEmail {
+	position: absolute;
+	margin-top: 67px;
+	margin-left: 20px;
+	z-index: 1;
+	background-color: white;
+	border: 1px solid #ccc;
+}
+
+.singleEmail:hover {
+	cursor: pointer;
+	background-color: #d3d3d3;
+}

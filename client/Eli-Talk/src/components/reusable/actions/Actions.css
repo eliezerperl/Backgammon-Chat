@@ -1,0 +1,22 @@
+.action {
+	cursor: pointer;
+	position: relative;
+}
+
+.action:hover {
+	color: rgb(77, 1, 77);
+}
+
+/* .action[data-focused="true"] {
+	pointer-events: none;
+} */
+
+.action[data-focused="true"]::after {
+	content: "";
+	position: absolute;
+	top: 25px;
+	left: 0px;
+	width: 100px;
+	height: 200px;
+	background-color: black;
+}
