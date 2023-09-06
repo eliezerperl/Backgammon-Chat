@@ -28,6 +28,7 @@ const ChatBox = (props: any) => {
 					socket.send(
 						JSON.stringify({ from: myId, message: inputElement.value })
 					);
+					// inputElement.value = "";
 				}, 500); // timeout for the websocket to connect
 			} catch (error) {
 				console.log(error);
@@ -46,10 +47,8 @@ const ChatBox = (props: any) => {
 	};
 
 	socket.onmessage = (event) => {
-		setTimeout(() => {
-			const receivedMessage = event.data;
-			console.log("Received message:", receivedMessage);
-		}, 500);
+		const receivedMessage = event.data;
+		console.log("Received message:", receivedMessage);
 	};
 	socket.onclose = async () => {};
 	socket.onerror = (error) => {

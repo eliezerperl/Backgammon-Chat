@@ -1,4 +1,5 @@
-from fastapi import FastAPI, WebSocket
+from typing import List
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from routes.user_routes import router
 import uvicorn
@@ -17,13 +18,24 @@ app.add_middleware(
 
 app.include_router(router)
 
+connected_clients: List[WebSocket] = []
+
 @app.websocket('/message/{recv_id}')
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    connected_clients.append(websocket)
 
-    data = await websocket.receive_json()
-    await websocket.send_json(data) #client side socket.onmessage is not responding to this @ChatBox.tsx
-    print('sent: ', data)
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            # Broadcast the received data to all connected clients
+            for client in connected_clients:
+                await client.send_json(data)
+                print('sent: ', data)
+    except WebSocketDisconnect:
+        # Remove the disconnected client from the list
+        connected_clients.remove(websocket)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=8000, reload=True, access_log=False)
