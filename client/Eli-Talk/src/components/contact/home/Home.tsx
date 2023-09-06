@@ -11,8 +11,7 @@ import ChatBox from "@/components/chat/chatBox/ChatBox";
 const Home = () => {
 	const navigate = useNavigate();
 	const [connected, setConnected] = useState(false);
-	const [dialog, setDialog] = useState(false);
-	const [userToChat, setUserToChat] = useState({});
+	const [userToChat, setUserToChat] = useState(null);
 
 	const name: string | null = getLocalItem("Name");
 	const authed: string | null = getLocalItem("Authenticated");
@@ -85,7 +84,6 @@ const Home = () => {
 				return new Error("Could not start chat");
 			}
 			setUserToChat(dataFromChild);
-			setDialog(!dialog);
 		} catch (error) {
 			console.log(error);
 		}
@@ -93,7 +91,7 @@ const Home = () => {
 
 	return (
 		<div className="mainAreaContainer">
-			<div className={`homeContainer ${dialog ? "" : "hasNoDialog"}`}>
+			<div className={`homeContainer`}>
 				<button className="connectDisconnectBtn" onClick={connectDisconnect}>
 					{connected ? "Connected" : "Connect"}
 				</button>
@@ -102,11 +100,9 @@ const Home = () => {
 					<ContactList parentCallback={userToChatCb} />
 				</div>
 			</div>
-			{dialog && (
-				<div className="chatAndGameContainer">
-					<ChatBox user={userToChat} />
-				</div>
-			)}
+			<div className="chatAndGameContainer">
+				<ChatBox user={userToChat} />
+			</div>
 		</div>
 	);
 };

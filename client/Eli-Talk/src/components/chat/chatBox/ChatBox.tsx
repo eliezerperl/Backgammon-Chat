@@ -1,76 +1,78 @@
 import getLocalItem from "@/utils/sessionStorage/getLocalItem";
 import "./ChatBox.css";
+import { useEffect, useState } from "react";
 
 const ChatBox = (props: any) => {
-	const token: string | null = getLocalItem("jwtToken");
+	// const token: string | null = getLocalItem("jwtToken");
 	const myId: string | null = getLocalItem("Id");
+	const [inputValue, setInputValue] = useState<string>("");
+	const [socket, setSocket] = useState<WebSocket | null>(null);
 
-	const sendMsg = async () => {
-		const inputElement: HTMLInputElement =
-			document.querySelector("#messageInput")!;
-		if (inputElement.value.length > 0) {
-			try {
-				// const res = await fetch(`http://localhost:8000/send/${props.user.id}`, {
-				// 	method: "POST",
-				// 	headers: {
-				// 		"Content-Type": "application/json",
-				// 		Authorization: `Bearer ${token}`,
-				// 	},
-				// 	body: JSON.stringify(inputElement.value),
-				// });
-				// if (!res.ok) {
-				// 	return new Error("Could not send message");
-				// }
-				const socket = new WebSocket(
-					`ws://localhost:8000/message/${props.user.id}`
-				);
-				setTimeout(() => {
-					socket.send(
-						JSON.stringify({ from: myId, message: inputElement.value })
-					);
-					// inputElement.value = "";
-				}, 500); // timeout for the websocket to connect
-			} catch (error) {
-				console.log(error);
+	//INCOMIONG MSG HANDLE
+	useEffect(() => {
+		// Create and open the WebSocket connection
+		const newSocket = new WebSocket(`ws://localhost:8000/message/${myId}`);
+		newSocket.onopen = () => {
+			console.log("WebSocket connection is open.");
+		};
+
+		newSocket.onmessage = (event) => {
+			const receivedMessage = event.data;
+			console.log("Received message:", receivedMessage);
+		};
+
+		newSocket.onclose = () => {
+			console.log("WebSocket connection closed.");
+		};
+
+		newSocket.onerror = (error) => {
+			console.error("WebSocket error:", error);
+		};
+
+		setSocket(newSocket);
+
+		// Cleanup the WebSocket connection on unmount
+		return () => {
+			if (newSocket) {
+				newSocket.close();
 			}
+		};
+	}, [myId]);
+	const sendMsg = async () => {
+		if (inputValue.length > 0 && socket) {
+			socket.send(
+				JSON.stringify({
+					from: myId,
+					recipient_id: props.user.id,
+					message: inputValue,
+				})
+			);
+			setInputValue("");
 		}
 	};
 
-	//INCOMIONG MSG HANDLE
-	const socket = new WebSocket(`ws://localhost:8000/message/${myId}`);
-
-	socket.onopen = () => {
-		console.log(
-			"Listening for msgs on ",
-			`ws://localhost:8000/message/${myId}`
-		);
-	};
-
-	socket.onmessage = (event) => {
-		const receivedMessage = event.data;
-		console.log("Received message:", receivedMessage);
-	};
-	socket.onclose = async () => {};
-	socket.onerror = (error) => {
-		console.error("WebSocket error:", error);
-	};
-
-	return (
-		<div className="chatBoxContainer">
-			<div className="chatWith">
-				Chat with {props.user.name} {props.user.id}
-			</div>
-			<div className="chatHistory"></div>
-			<div className="writeChatContainer">
-				<form>
-					<input type="text" id="messageInput" />
+	if (props.user) {
+		return (
+			<div className="chatBoxContainer">
+				<div className="chatWith">
+					Chat with {props.user.name} {props.user.id}
+				</div>
+				<div className="chatHistory"></div>
+				<div className="writeChatContainer">
+					<input
+						type="text"
+						value={inputValue}
+						onChange={(e) => setInputValue(e.target.value)}
+					/>
 					<button onClick={sendMsg} className="sendMsgBtn">
 						Send message
 					</button>
-				</form>
+				</div>
 			</div>
-		</div>
-	);
+		);
+	} else {
+		return <h2>CHATT SCREEN</h2>;
+	}
 };
 
 export default ChatBox;
