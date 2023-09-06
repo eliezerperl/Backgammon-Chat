@@ -56,7 +56,9 @@ async def Login(user_data: dict):
     })
     
     authed_user = {
+        "id": unauthed_user['id'],
         "name": unauthed_user['name'],
+        "email": unauthed_user['email'],
         "token": token
     }
     return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=authed_user)

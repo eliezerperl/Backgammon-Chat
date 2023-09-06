@@ -3,7 +3,6 @@ import "./Navbar.css";
 import Actions from "../actions/Actions";
 import getLocalItem from "@/utils/sessionStorage/getLocalItem";
 import Disconnect from "@/utils/users/Disconnect";
-// import GetUpdateUsers from "@/utils/users/GetUpdateUsers";
 
 const Navbar = () => {
 	const navigate = useNavigate();
@@ -17,7 +16,10 @@ const Navbar = () => {
 			}
 			//NEED TO UPDATE OTHERS' UI
 			// const socket = new WebSocket(`ws://localhost:5555/updateusers`);
-			// socket.send(JSON.stringify({ type: "user_disconnect" }));
+
+			// socket.send(
+			// 	JSON.stringify({ type: "user_disconnect", name: `${name}` })
+			// );
 
 			// socket.onmessage = () => {
 			// 	if (token) {

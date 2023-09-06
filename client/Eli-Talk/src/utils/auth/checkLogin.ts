@@ -16,7 +16,9 @@ async function checkLogin(data : any) {
         }
         userData = await res.json();
         setLocalItem('jwtToken', userData["token"])
+        setLocalItem('Id', userData["id"])
         setLocalItem('Name', userData["name"])
+        setLocalItem('Email', userData['email'])
         setLocalItem('Authenticated', 'true')
         setLocalItem('Connected', 'false')
         

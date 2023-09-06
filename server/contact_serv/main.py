@@ -26,7 +26,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Store connected WebSocket clients
 connected_clients = set()
-@app.websocket("/updateusers")
+@app.websocket("/updateusers") 
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     connected_clients.add(websocket)  # Store the WebSocket object

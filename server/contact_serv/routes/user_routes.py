@@ -17,7 +17,8 @@ async def get_all():
     return all_users
 
 
-#CONNECT ACTION 
+
+#CONNECT ACTION
 @router.post('/getonline', tags=['Actions'])
 async def get_online(get_current_user: dict = Depends(get_current_user)):
     change_user_to_online(get_current_user["id"])

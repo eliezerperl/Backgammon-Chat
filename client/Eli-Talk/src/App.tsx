@@ -2,7 +2,7 @@ import "./App.css";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import Login from "components/auth/login/Login";
 import Register from "components/auth/register/Register";
-import Home from "components/auth/home/Home";
+import Home from "components/contact/home/Home";
 import { useEffect } from "react";
 import Navbar from "./components/reusable/Navbar/Navbar";
 import Footer from "./components/reusable/footer/Footer";

@@ -1,0 +1,28 @@
+.friendsContainer {
+	display: flex;
+	gap: 200px;
+}
+
+.userActions {
+	display: flex;
+	gap: 15px;
+}
+
+.onlineUsers {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	border: 1px solid black;
+	padding: 5px;
+}
+
+.userActions {
+	display: flex;
+	gap: 15px;
+}
+
+.playBtn:hover,
+.chatBtn:hover {
+	background-color: black;
+	color: white;
+}

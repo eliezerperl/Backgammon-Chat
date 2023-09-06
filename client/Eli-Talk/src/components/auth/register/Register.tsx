@@ -2,7 +2,7 @@ import { BaseSyntheticEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Register.css";
 import registerUser from "@/utils/auth/registerUser";
-import checkLogin from "@/utils/auth/checkLogin";
+// import checkLogin from "@/utils/auth/checkLogin";
 import FormInput from "@/components/reusable/formInput/FormInput";
 import inputs from "./inputData";
 
