@@ -32,10 +32,12 @@ const Home = () => {
 	const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
 	socket.onmessage = () => {
-		console.log("hi");
+		console.log("user websocket msg");
 	};
 
-	socket.onclose = async () => {};
+	socket.onclose = async () => {
+		console.log("User websocket closed");
+	};
 	//END SOCKET CONNECTION
 
 	const connectDisconnect = async () => {

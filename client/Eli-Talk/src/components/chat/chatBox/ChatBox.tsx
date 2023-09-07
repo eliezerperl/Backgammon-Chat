@@ -1,12 +1,18 @@
 import getLocalItem from "@/utils/sessionStorage/getLocalItem";
 import "./ChatBox.css";
-import { useEffect, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useState } from "react";
+
+interface Message {
+	text: string;
+	type: "sender" | "receiver";
+}
 
 const ChatBox = (props: any) => {
 	// const token: string | null = getLocalItem("jwtToken");
 	const myId: string | null = getLocalItem("Id");
 	const [inputValue, setInputValue] = useState<string>("");
 	const [socket, setSocket] = useState<WebSocket | null>(null);
+	const [messages, setMessages] = useState<Message[]>([]);
 
 	//INCOMIONG MSG HANDLE
 	useEffect(() => {
@@ -17,8 +23,13 @@ const ChatBox = (props: any) => {
 		};
 
 		newSocket.onmessage = (event) => {
-			const receivedMessage = event.data;
+			const receivedMessage = JSON.parse(event.data);
 			console.log("Received message:", receivedMessage);
+			const messageGot: Message = {
+				text: receivedMessage.message,
+				type: "receiver",
+			};
+			setMessages((prevMsgs) => [...prevMsgs, messageGot]);
 		};
 
 		newSocket.onclose = () => {
@@ -38,7 +49,13 @@ const ChatBox = (props: any) => {
 			}
 		};
 	}, [myId]);
-	const sendMsg = async () => {
+
+	useEffect(() => {
+		setMessages([]);
+	}, [props.user]);
+
+	const sendMsg = async (e: BaseSyntheticEvent) => {
+		e.preventDefault();
 		if (inputValue.length > 0 && socket) {
 			socket.send(
 				JSON.stringify({
@@ -47,6 +64,11 @@ const ChatBox = (props: any) => {
 					message: inputValue,
 				})
 			);
+			const mySentMessage: Message = {
+				text: inputValue,
+				type: "sender",
+			};
+			setMessages((prevMsgs) => [...prevMsgs, mySentMessage]);
 			setInputValue("");
 		}
 	};
@@ -57,16 +79,29 @@ const ChatBox = (props: any) => {
 				<div className="chatWith">
 					Chat with {props.user.name} {props.user.id}
 				</div>
-				<div className="chatHistory"></div>
+				<div className="chatHistory">
+					{messages &&
+						messages.map((message, index) => (
+							<div
+								key={index}
+								className={`message ${
+									message.type === "sender" ? "sent-msg" : "recv-msg"
+								}`}>
+								{message.text}
+							</div>
+						))}
+				</div>
 				<div className="writeChatContainer">
-					<input
-						type="text"
-						value={inputValue}
-						onChange={(e) => setInputValue(e.target.value)}
-					/>
-					<button onClick={sendMsg} className="sendMsgBtn">
-						Send message
-					</button>
+					<form>
+						<input
+							type="text"
+							value={inputValue}
+							onChange={(e) => setInputValue(e.target.value)}
+						/>
+						<button onClick={sendMsg} className="sendMsgBtn">
+							Send message
+						</button>
+					</form>
 				</div>
 			</div>
 		);

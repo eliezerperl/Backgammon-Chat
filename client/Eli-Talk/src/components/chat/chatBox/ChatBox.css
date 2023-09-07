@@ -1,6 +1,7 @@
 .chatBoxContainer {
 	display: flex;
 	flex-direction: column;
+	/* align-items: flex-start; */
 	justify-content: space-between;
 	border: 1px solid black;
 	height: 100%;
@@ -8,19 +9,38 @@
 	box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.6);
 }
 
+.chatHistory {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+}
+
+.message {
+	padding: 8px;
+	margin: 4px;
+	border-radius: 4px;
+}
+
+.sent-msg {
+	background-color: grey;
+	color: #fff;
+	align-self: flex-start;
+}
+
+.recv-msg {
+	background-color: #007bff;
+	color: #fff;
+	align-self: flex-end;
+}
+
 .chatWith {
 	border: 1px solid blue;
 }
-/*
-.chatsHistory {
-	border: 1px solid black;
-	flex: 9;
-}
-*/
+
 .writeChatContainer {
-	display: flex;
-	flex-direction: column;
-	/* flex: 1; */
+	border: 1px solid blue;
 }
 
 .sendMsgBtn {
