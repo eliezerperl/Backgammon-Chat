@@ -10,8 +10,9 @@ import ChatBox from "@/components/chat/chatBox/ChatBox";
 
 const Home = () => {
 	const navigate = useNavigate();
-	const [connected, setConnected] = useState(false);
+	const [connected, setConnected] = useState<boolean>(false);
 	const [userToChat, setUserToChat] = useState(null);
+	const [senderId, setSenderId] = useState<string | null>(null);
 
 	const name: string | null = getLocalItem("Name");
 	const authed: string | null = getLocalItem("Authenticated");
@@ -28,15 +29,15 @@ const Home = () => {
 		}
 	}, []);
 
-	//SOCKET CONNECTION
+	//SOCKET CONNECTION for sending msgs to server for connectDisconnect
 	const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
 	socket.onmessage = () => {
-		console.log("user websocket msg");
+		console.log("user websocket msg sender");
 	};
 
 	socket.onclose = async () => {
-		console.log("User websocket closed");
+		console.log("User websocket sender closed");
 	};
 	//END SOCKET CONNECTION
 
@@ -91,6 +92,11 @@ const Home = () => {
 		}
 	};
 
+	const senderIdCb = (id: string) => {
+		console.log("the sender id is ", id);
+		setSenderId(id);
+	};
+
 	return (
 		<div className="mainAreaContainer">
 			<div className={`homeContainer`}>
@@ -99,11 +105,11 @@ const Home = () => {
 				</button>
 				<div className="greetContainer">
 					<h3>Welcome {name}</h3>
-					<ContactList parentCallback={userToChatCb} />
+					<ContactList senderId={senderId} parentCallback={userToChatCb} />
 				</div>
 			</div>
 			<div className="chatAndGameContainer">
-				<ChatBox user={userToChat} />
+				<ChatBox fromWhomId={senderIdCb} user={userToChat} />
 			</div>
 		</div>
 	);

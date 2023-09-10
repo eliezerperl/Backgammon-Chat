@@ -19,7 +19,7 @@ const ChatBox = (props: any) => {
 		// Create and open the WebSocket connection
 		const newSocket = new WebSocket(`ws://localhost:8000/message/${myId}`);
 		newSocket.onopen = () => {
-			console.log("WebSocket connection is open.");
+			console.log("msg WebSocket connection is open.");
 		};
 
 		newSocket.onmessage = (event) => {
@@ -30,10 +30,11 @@ const ChatBox = (props: any) => {
 				type: "receiver",
 			};
 			setMessages((prevMsgs) => [...prevMsgs, messageGot]);
+			props.fromWhomId(receivedMessage.from);
 		};
 
 		newSocket.onclose = () => {
-			console.log("WebSocket connection closed.");
+			console.log("msg WebSocket connection closed.");
 		};
 
 		newSocket.onerror = (error) => {
@@ -106,7 +107,7 @@ const ChatBox = (props: any) => {
 			</div>
 		);
 	} else {
-		return <h2>CHATT SCREEN</h2>;
+		return <h2>CHAT SCREEN</h2>;
 	}
 };
 
