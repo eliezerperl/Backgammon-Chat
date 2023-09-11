@@ -5,9 +5,9 @@ import GetUpdateUsers from "@/utils/users/GetUpdateUsers";
 import { useEffect, useState } from "react";
 
 const ContactList = (props: any) => {
-	const [allOfflineUsers, setAllOfflineUsers] = useState<any[]>([]);
-	const [allOnlineUsers, setAllOnlineUsers] = useState<any[]>([]);
-	const [userChattingWith, setUserChattingWith] = useState(null);
+	const [allOfflineUsers, setAllOfflineUsers] = useState<User[]>([]);
+	const [allOnlineUsers, setAllOnlineUsers] = useState<User[]>([]);
+	const [modifiedUsers, setModifiedUsers] = useState<User[]>([]);
 
 	const token: string | null = getLocalItem("jwtToken");
 	const id: string | null = getLocalItem("Id");
@@ -42,47 +42,46 @@ const ContactList = (props: any) => {
 		getUsers();
 	}, []);
 
-	const handleChatClick = (user: any) => {
-		props.parentCallback({
+	const handleChatClick = (user: User) => {
+		props.chatCb({
 			id: user.id,
 			name: user.name,
 		});
 		//setting user currently on chat screen with in order not to get
 		//chatwaiting notifications while on chat with said person
-		setUserChattingWith(user);
+		if (user.alert) {
+			user.alert = false;
+		}
 	};
 
-	const handlePlayClick = (user: any) => {};
+	const handlePlayClick = (user: User) => {
+		props.playCb(user);
+	};
 
 	return (
 		<div className="friendsContainer">
-			<div>
+			<div className="onlineUsersContainer">
 				Online Friends:
-				{allOnlineUsers.map((user) => (
-					<div className="onlineUsers" key={user["id"]}>
-						<b
-							className={
-								props.senderId === user["id"] && userChattingWith !== user
-									? "chat-waiting"
-									: ""
-							}>
-							{user["name"]}
-						</b>
+				{modifiedUsers.map((user: User) => (
+					<div className="onlineUsers" key={user.id}>
+						<b className={user.alert ? "chat-waiting" : ""}>{user.name}</b>|
 						<div className="userActions">
 							<button onClick={() => handleChatClick(user)} className="chatBtn">
 								Chat
 							</button>
-							<button className="playBtn" onClick={() => handlePlayClick(user)}>
+							<button onClick={() => handlePlayClick(user)} className="playBtn">
 								Play
 							</button>
 						</div>
 					</div>
 				))}
 			</div>
-			<div className="offlineUsers">
+			<div className="offlineUsersContainer">
 				Offline Friends:
 				{allOfflineUsers.map((user) => (
-					<div key={user["id"]}>{user["name"]}</div>
+					<div className="offlineUsers" key={user.id}>
+						{user.name}
+					</div>
 				))}
 			</div>
 		</div>
