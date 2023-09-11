@@ -11,9 +11,13 @@ import ChatBox from "@/components/chat/chatBox/ChatBox";
 const Home = () => {
 	const navigate = useNavigate();
 	const [connected, setConnected] = useState<boolean>(false);
-	const [userToChat, setUserToChat] = useState(null);
-	const [senderId, setSenderId] = useState<string | null>(null);
 
+	const [userToChat, setUserToChat] = useState(null);
+	const [sent, setSent] = useState<any>({});
+
+	const [gameSocket, setGameSocket] = useState<WebSocket | null>(null);
+
+	const id: string | null = getLocalItem("Id");
 	const name: string | null = getLocalItem("Name");
 	const authed: string | null = getLocalItem("Authenticated");
 	const token: string | null = getLocalItem("jwtToken");
@@ -92,10 +96,58 @@ const Home = () => {
 		}
 	};
 
-	const senderIdCb = (id: string) => {
-		console.log("the sender id is ", id);
-		setSenderId(id);
+	const sentCb = (req: any) => {
+		setSent(req);
 	};
+
+	const playReq = (user: any) => {
+		// const socket = new WebSocket(`ws://localhost:9000/play/${user.id}`);
+
+		setTimeout(() => {
+			gameSocket?.send(
+				JSON.stringify({
+					user_to_play_id: user.id,
+					challenger_id: id,
+					challenger_name: name,
+				})
+			);
+		}, 500);
+		//send a ws request to ws://localhost:9000/play/user.id that user will be listening
+	};
+
+	//INCOMIONG GAME REQ HANDLE
+	useEffect(() => {
+		// Create and open the WebSocket connection
+		const newSocket = new WebSocket(`ws://localhost:9000/play/${id}`);
+		newSocket.onopen = () => {
+			console.log("Game WebSocket connection is open.", id);
+		};
+
+		newSocket.onmessage = (event) => {
+			const receivedMessage = JSON.parse(event.data);
+			console.log(
+				`${receivedMessage.challenger_name} would like to challenge you.\nAccept?`,
+				receivedMessage
+			);
+		};
+
+		newSocket.onclose = () => {
+			console.log("Game WebSocket connection closed.");
+		};
+
+		newSocket.onerror = (error) => {
+			console.error("WebSocket error:", error);
+		};
+
+		setGameSocket(newSocket);
+
+		// Cleanup the WebSocket connection on unmount
+		return () => {
+			if (newSocket) {
+				newSocket.close();
+			}
+		};
+	}, [id]);
 
 	return (
 		<div className="mainAreaContainer">
@@ -105,11 +157,11 @@ const Home = () => {
 				</button>
 				<div className="greetContainer">
 					<h3>Welcome {name}</h3>
-					<ContactList senderId={senderId} parentCallback={userToChatCb} />
+					<ContactList sentReq={sent} playCb={playReq} chatCb={userToChatCb} />
 				</div>
 			</div>
 			<div className="chatAndGameContainer">
-				<ChatBox fromWhomId={senderIdCb} user={userToChat} />
+				<ChatBox fromWhomId={sentCb} user={userToChat} />
 			</div>
 		</div>
 	);

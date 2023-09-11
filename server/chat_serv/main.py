@@ -18,25 +18,6 @@ app.add_middleware(
 
 app.include_router(router)
 
-# connected_clients: List[WebSocket] = []
-
-# @app.websocket('/message/{recv_id}')
-# async def websocket_endpoint(websocket: WebSocket):
-#     await websocket.accept()
-#     connected_clients.append(websocket)
-
-#     try:
-#         while True:
-#             data = await websocket.receive_json()
-
-#             # Broadcast the received data to all connected clients
-#             for client in connected_clients:
-#                 await client.send_json(data)
-#                 print('sent: ', data)
-#     except WebSocketDisconnect:
-#         # Remove the disconnected client from the list
-#         connected_clients.remove(websocket)
-
 connected_clients: Dict[str, WebSocket] = {}
 
 @app.websocket('/message/{recv_id}')
