@@ -5,8 +5,8 @@ import GetUpdateUsers from "@/utils/users/GetUpdateUsers";
 import { useEffect, useState } from "react";
 
 const ContactList = (props: any) => {
-	const [allOfflineUsers, setAllOfflineUsers] = useState<User[]>([]);
-	const [allOnlineUsers, setAllOnlineUsers] = useState<User[]>([]);
+	const [allOfflineUsers, setAllOfflineUsers] = useState<any[]>([]);
+	const [allOnlineUsers, setAllOnlineUsers] = useState<any[]>([]);
 	const [modifiedUsers, setModifiedUsers] = useState<User[]>([]);
 
 	const token: string | null = getLocalItem("jwtToken");
@@ -26,33 +26,45 @@ const ContactList = (props: any) => {
 			setAllOnlineUsers(onlineUsers);
 		}
 	};
-
-	//SOCKET CONNECTION
-	const socket = new WebSocket(`ws://localhost:5555/updateusers`);
-
-	socket.onmessage = () => {
-		console.log("User Websocket Connected");
-		getUsers();
-	};
-	socket.onclose = () => {
-		console.log("User websocket closed");
-	};
-
 	useEffect(() => {
 		getUsers();
 	}, []);
+
+	//SOCKET CONNECTION
+	useEffect(() => {
+		const socket = new WebSocket(`ws://localhost:5555/updateusers`);
+
+		socket.onmessage = () => {
+			console.log("User Websocket Connected");
+			getUsers();
+		};
+		socket.onclose = () => {
+			console.log("User websocket closed");
+		};
+	}, [id]);
 
 	const handleChatClick = (user: User) => {
 		props.chatCb({
 			id: user.id,
 			name: user.name,
 		});
-		//setting user currently on chat screen with in order not to get
-		//chatwaiting notifications while on chat with said person
-		if (user.alert) {
-			user.alert = false;
-		}
 	};
+
+	useEffect(() => {
+		const modifiedUsers = allOnlineUsers.map((user) => ({
+			...user,
+			alert: true ? false : false,
+		}));
+		setModifiedUsers(modifiedUsers);
+	}, [props.user]);
+
+	useEffect(() => {
+		const modifiedUsers = allOnlineUsers.map((user) => ({
+			...user,
+			alert: props.sentReq.from === user.id && user.id !== props.user.id,
+		}));
+		setModifiedUsers(modifiedUsers);
+	}, [props.sentReq.from, allOnlineUsers]);
 
 	const handlePlayClick = (user: User) => {
 		props.playCb(user);

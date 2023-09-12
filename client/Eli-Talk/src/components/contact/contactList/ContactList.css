@@ -13,6 +13,7 @@
 	border: 1px solid black;
 	max-height: 300px;
 	overflow-y: scroll;
+	width: min-content;
 }
 
 .onlineUsers {
@@ -24,7 +25,6 @@
 }
 
 .offlineUsers {
-	width: 150px;
 	border: 1px solid black;
 }
 

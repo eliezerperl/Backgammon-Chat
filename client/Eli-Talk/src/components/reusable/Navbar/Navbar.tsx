@@ -14,18 +14,22 @@ const Navbar = () => {
 			if (token) {
 				Disconnect(token);
 			}
+
 			//NEED TO UPDATE OTHERS' UI
-			// const socket = new WebSocket(`ws://localhost:5555/updateusers`);
+			const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
-			// socket.send(
-			// 	JSON.stringify({ type: "user_disconnect", name: `${name}` })
-			// );
-
-			// socket.onmessage = () => {
-			// 	if (token) {
-			// 		GetUpdateUsers(token);
-			// 	}
-			// };
+			socket.onopen = () => {
+				console.log("logout sokcet open");
+				socket.send(
+					JSON.stringify({ type: "user_disconnect", name: `${name}` })
+				);
+			};
+			socket.onclose = () => {
+				console.log("logout sokcet closed");
+			};
+			setTimeout(() => {
+				socket.close();
+			}, 500);
 		}
 		sessionStorage.clear();
 		// setTimeout(() => {

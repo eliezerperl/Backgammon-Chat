@@ -16,6 +16,7 @@ const Home = () => {
 	const [sent, setSent] = useState<any>({});
 
 	const [gameSocket, setGameSocket] = useState<WebSocket | null>(null);
+	const [updateSocket, setUpdateSocket] = useState<WebSocket | null>(null);
 
 	const id: string | null = getLocalItem("Id");
 	const name: string | null = getLocalItem("Name");
@@ -34,41 +35,56 @@ const Home = () => {
 	}, []);
 
 	//SOCKET CONNECTION for sending msgs to server for connectDisconnect
-	const socket = new WebSocket(`ws://localhost:5555/updateusers`);
+	useEffect(() => {
+		// Check if id is available before creating the socket
+		if (id) {
+			const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
-	socket.onmessage = () => {
-		console.log("user websocket msg sender");
-	};
+			socket.onmessage = () => {
+				console.log("user websocket msg sender");
+			};
 
-	socket.onclose = async () => {
-		console.log("User websocket sender closed");
-	};
+			socket.onclose = async () => {
+				console.log("User websocket sender closed");
+			};
+			setUpdateSocket(socket);
+
+			// Cleanup the WebSocket connection on unmount
+			return () => {
+				if (socket) {
+					socket.close();
+				}
+			};
+		}
+	}, [id]);
 	//END SOCKET CONNECTION
 
-	const connectDisconnect = async () => {
+	const handleConnectDisconnect = async () => {
 		if (token) {
 			if (!connected) {
 				try {
 					const res = await Connect(token);
-					socket.send(
-						JSON.stringify({ type: "user_connect", name: `${name}` })
-					);
 					setLocalItem("Connected", "true");
 					setLocalItem("jwtToken", res);
 					setConnected(true);
+					// Send the connect message to the server using the existing WebSocket connection
+					updateSocket?.send(
+						JSON.stringify({ type: "user_connect", name: `${name}` })
+					);
 				} catch (error) {
 					console.log("Did not set refresh token");
 				}
 			} else {
 				try {
 					await Disconnect(token);
-					socket.send(
-						JSON.stringify({ type: "user_disconnect", name: `${name}` })
-					);
 					setLocalItem("Connected", "false");
 					setConnected(false);
+					// Send the disconnect message to the server using the existing WebSocket connection
+					updateSocket?.send(
+						JSON.stringify({ type: "user_disconnect", name: `${name}` })
+					);
 				} catch (error) {
-					console.log("Did not set dissconnect");
+					console.log("Did not set disconnect");
 				}
 			}
 		}
@@ -115,6 +131,10 @@ const Home = () => {
 		//send a ws request to ws://localhost:9000/play/user.id that user will be listening
 	};
 
+	// useEffect(() => {
+
+	// }, [])
+
 	//INCOMIONG GAME REQ HANDLE
 	useEffect(() => {
 		// Create and open the WebSocket connection
@@ -125,10 +145,41 @@ const Home = () => {
 
 		newSocket.onmessage = (event) => {
 			const receivedMessage = JSON.parse(event.data);
-			console.log(
-				`${receivedMessage.challenger_name} would like to challenge you.\nAccept?`,
-				receivedMessage
+			//making a brief connection the closing it to send rejection msg
+
+			const acceptChallenge = window.confirm(
+				`${receivedMessage.challenger_name} would like to challenge you.\nDo you want to accept?`
 			);
+			if (acceptChallenge) {
+				// User clicked "OK" (accept)
+				// Handle the acceptance logic here
+			} else {
+				const rejectionSocket = new WebSocket(
+					`ws://localhost:9000/play/reject/${receivedMessage.id}`
+				);
+
+				rejectionSocket.onopen = () => {
+					console.log("rejection socket open");
+					rejectionSocket.send(
+						JSON.stringify({
+							rejector_id: id,
+							rejectee_id: receivedMessage.challenger_id,
+							message: `${name} rejected your offer... sorry`,
+						})
+					);
+				};
+
+				rejectionSocket.onmessage = (rejEvent) => {
+					console.log(JSON.parse(rejEvent.data));
+				};
+
+				rejectionSocket.onclose = () => {
+					console.log("rejection socket closed");
+				};
+				setTimeout(() => {
+					rejectionSocket.close();
+				}, 500);
+			}
 		};
 
 		newSocket.onclose = () => {
@@ -152,16 +203,23 @@ const Home = () => {
 	return (
 		<div className="mainAreaContainer">
 			<div className={`homeContainer`}>
-				<button className="connectDisconnectBtn" onClick={connectDisconnect}>
+				<button
+					className="connectDisconnectBtn"
+					onClick={handleConnectDisconnect}>
 					{connected ? "Connected" : "Connect"}
 				</button>
 				<div className="greetContainer">
 					<h3>Welcome {name}</h3>
-					<ContactList sentReq={sent} playCb={playReq} chatCb={userToChatCb} />
+					<ContactList
+						user={userToChat}
+						sentReq={sent}
+						playCb={playReq}
+						chatCb={userToChatCb}
+					/>
 				</div>
 			</div>
 			<div className="chatAndGameContainer">
-				<ChatBox fromWhomId={sentCb} user={userToChat} />
+				<ChatBox fromWhom={sentCb} user={userToChat} />
 			</div>
 		</div>
 	);

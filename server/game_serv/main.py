@@ -1,6 +1,7 @@
 from typing import Dict, List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+
 # from routes.user_routes import router
 import uvicorn
 
@@ -10,7 +11,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins='http://localhost:5173',
+    allow_origins="http://localhost:5173",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,17 +38,18 @@ app.add_middleware(
 #         # Remove the disconnected client from the list
 #         connected_clients.remove(websocket)
 
+
+# FOR PLAY REQUESTS
 connected_clients: Dict[str, WebSocket] = {}
 
-@app.websocket('/play/{player_id}')
+
+@app.websocket("/play/{player_id}")
 async def websocket_endpoint(websocket: WebSocket, player_id: str):
     await websocket.accept()
     # # Store the WebSocket connection with its who_to_play_id
     connected_clients[player_id] = websocket
 
-    print(connected_clients)
-    
-    
+    print("play clients", connected_clients)
 
     try:
         while True:
@@ -63,11 +65,46 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
                 # Broadcast the message to all connected clients
                 for client in connected_clients.values():
                     await client.send_json(data)
-                    print(f"Sent a broadcast message from {player_id}: {who_to_play_id}")
+                    print(
+                        f"Sent a broadcast message from {player_id}: {who_to_play_id}"
+                    )
 
     except WebSocketDisconnect:
         # Remove the disconnected client from the dictionary
         del connected_clients[who_to_play_id]
+
+
+# FOR REJECTIONS
+rej_connected_clients: Dict[str, WebSocket] = {}
+
+
+async def rejection_websocket_endpoint(websocket: WebSocket, rejection_to_id: str):
+    await websocket.accept()
+    rej_connected_clients[rejection_to_id] = websocket
+
+    print("Rejection clients: ", rej_connected_clients)
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            # Check if a specific recipient is specified in the message
+            rejectee_id = data.get("rejectee_id")
+            rejector_id = data.get("rejector_id")
+
+            if rejector_id == rejection_to_id:
+                # Send the rejection message to the user who initiated the request
+                recipient_websocket = rej_connected_clients[rejectee_id]
+                await recipient_websocket.send_json(data)
+                print(f"Sent a rejection from {rejector_id} to {rejectee_id}: {data}")
+            else:
+                # Handle the case when the rejectee is not connected
+                print(f"{rejector_id} is not connected.")
+
+    except WebSocketDisconnect:
+        # Remove the disconnected client from the dictionary
+        del rej_connected_clients[rejection_to_id]
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", port=9000, reload=True, access_log=False)

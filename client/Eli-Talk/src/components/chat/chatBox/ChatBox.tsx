@@ -1,10 +1,11 @@
 import getLocalItem from "@/utils/sessionStorage/getLocalItem";
 import "./ChatBox.css";
-import { BaseSyntheticEvent, useEffect, useState } from "react";
+import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
 
 interface Message {
 	text: string;
 	type: "sender" | "receiver";
+	room: string | null;
 }
 
 const ChatBox = (props: any) => {
@@ -13,6 +14,15 @@ const ChatBox = (props: any) => {
 	const [inputValue, setInputValue] = useState<string>("");
 	const [socket, setSocket] = useState<WebSocket | null>(null);
 	const [messages, setMessages] = useState<Message[]>([]);
+
+	const chatHistoryRef = useRef<HTMLDivElement | null>(null);
+
+	//KEEP MSGS SCROLLED TO LATEST
+	useEffect(() => {
+		if (chatHistoryRef.current) {
+			chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+		}
+	}, [messages]);
 
 	//INCOMIONG MSG HANDLE
 	useEffect(() => {
@@ -28,9 +38,11 @@ const ChatBox = (props: any) => {
 			const messageGot: Message = {
 				text: receivedMessage.message,
 				type: "receiver",
+				// room: room,
+				room: receivedMessage.from,
 			};
 			setMessages((prevMsgs) => [...prevMsgs, messageGot]);
-			props.fromWhomId(receivedMessage.from);
+			props.fromWhom(receivedMessage);
 		};
 
 		newSocket.onclose = () => {
@@ -51,9 +63,19 @@ const ChatBox = (props: any) => {
 		};
 	}, [myId]);
 
-	useEffect(() => {
-		setMessages([]);
-	}, [props.user]);
+	// //create unique room ids
+	// useEffect(() => {
+	// 	getRoomId();
+	// }, [props.user]);
+
+	// const getRoomId = () => {
+	// 	if (props.user && props.user.id) {
+	// 		const roomId = [myId, props.user.id].sort();
+	// 		const uniqueRoomId = roomId.join("-");
+	// 		console.log("room id: ", uniqueRoomId);
+	// 		setRoom(uniqueRoomId);
+	// 	}
+	// };
 
 	const sendMsg = async (e: BaseSyntheticEvent) => {
 		e.preventDefault();
@@ -68,6 +90,8 @@ const ChatBox = (props: any) => {
 			const mySentMessage: Message = {
 				text: inputValue,
 				type: "sender",
+				// room: room,
+				room: props.user.id,
 			};
 			setMessages((prevMsgs) => [...prevMsgs, mySentMessage]);
 			setInputValue("");
@@ -78,19 +102,23 @@ const ChatBox = (props: any) => {
 		return (
 			<div className="chatBoxContainer">
 				<div className="chatWith">
-					Chat with {props.user.name} {props.user.id}
+					<u>Chat with {props.user.name}</u>
 				</div>
-				<div className="chatHistory">
+				<div className="chatHistory" ref={chatHistoryRef}>
 					{messages &&
-						messages.map((message, index) => (
-							<div
-								key={index}
-								className={`message ${
-									message.type === "sender" ? "sent-msg" : "recv-msg"
-								}`}>
-								{message.text}
-							</div>
-						))}
+						messages.map(
+							(message, index) =>
+								// room === message.room &&
+								props.user.id === message.room && (
+									<div
+										key={index}
+										className={`message ${
+											message.type === "sender" ? "sent-msg" : "recv-msg"
+										}`}>
+										{message.text}
+									</div>
+								)
+						)}
 				</div>
 				<div className="writeChatContainer">
 					<form>
