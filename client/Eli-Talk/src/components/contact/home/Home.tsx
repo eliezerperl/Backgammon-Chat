@@ -7,20 +7,18 @@ import Connect from "@/utils/users/Connect";
 import Disconnect from "@/utils/users/Disconnect";
 import ContactList from "../contactList/ContactList";
 import ChatBox from "@/components/chat/chatBox/ChatBox";
+import Toast from "@/components/reusable/toast/Toast";
 
 const Home = () => {
 	const navigate = useNavigate();
 	const [connected, setConnected] = useState<boolean>(false);
+	const [toastMessage, setToastMessage] = useState<string>("");
+	const [showToast, setShowToast] = useState<boolean>(false);
 
 	const [userToChat, setUserToChat] = useState(null);
 	const [sent, setSent] = useState<any>({});
 
 	const [gameSocket, setGameSocket] = useState<WebSocket | null>(null);
-	const [gameRejectionSocket, setGameRejectionSocket] =
-		useState<WebSocket | null>(null);
-	const [gameAcceptSocket, setGameAcceptSocket] = useState<WebSocket | null>(
-		null
-	);
 	const [updateSocket, setUpdateSocket] = useState<WebSocket | null>(null);
 
 	const id: string | null = getLocalItem("Id");
@@ -28,6 +26,15 @@ const Home = () => {
 	const authed: string | null = getLocalItem("Authenticated");
 	const token: string | null = getLocalItem("jwtToken");
 	const isConnected: string | null = getLocalItem("Connected");
+
+	const showToastWithDuration = (message: string, duration: number) => {
+		setToastMessage(message);
+		setShowToast(true);
+
+		setTimeout(() => {
+			setShowToast(false);
+		}, duration);
+	};
 
 	useEffect(() => {
 		if (isConnected === "true") {
@@ -42,12 +49,6 @@ const Home = () => {
 	useEffect(() => {
 		// Check if id is available before creating the socket
 		if (id) {
-			//LISTEN TO ACCEPT SOCKET
-			// const acceptSocket = new WebSocket(
-			// 	`ws://localhost:9000/${id}/d8dbb913-e1ff-444d-99fc-42b86408b755`
-			// );
-			//LISTEN ON REJECTION SOCKET
-
 			//Listen on user socket
 			const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
@@ -131,7 +132,7 @@ const Home = () => {
 		gameSocket?.send(
 			JSON.stringify({
 				user_to_play_id: user.id,
-				// user_to_play_name: user.name,
+				user_to_play_name: user.name,
 				challenger_id: id,
 				challenger_name: name,
 			})
@@ -152,8 +153,9 @@ const Home = () => {
 				alert(`${receivedMessage.decliner_name} declined your offer`);
 				return;
 			}
-			if (receivedMessage.accept) {
-				alert(`${receivedMessage.accepter_name} accepted your offer`);
+			if (receivedMessage.startGame) {
+				showToastWithDuration("Game starting...", 3000);
+				console.log(receivedMessage);
 				return;
 			}
 
@@ -165,6 +167,7 @@ const Home = () => {
 				newSocket.send(
 					JSON.stringify({
 						action: "accept",
+						challengeeName: receivedMessage.user_to_play_name,
 						challengerName: receivedMessage.challenger_name,
 						challengerId: receivedMessage.challenger_id,
 					})
@@ -174,6 +177,7 @@ const Home = () => {
 				newSocket.send(
 					JSON.stringify({
 						action: "decline",
+						challengeeName: receivedMessage.user_to_play_name,
 						challengerName: receivedMessage.challenger_name,
 						challengerId: receivedMessage.challenger_id,
 					})
@@ -200,27 +204,36 @@ const Home = () => {
 	}, [id]);
 
 	return (
-		<div className="mainAreaContainer">
-			<div className={`homeContainer`}>
-				<button
-					className="connectDisconnectBtn"
-					onClick={handleConnectDisconnect}>
-					{connected ? "Connected" : "Connect"}
-				</button>
-				<div className="greetContainer">
-					<h3>Welcome {name}</h3>
-					<ContactList
-						user={userToChat}
-						sentReq={sent}
-						playCb={playReq}
-						chatCb={userToChatCb}
-					/>
+		<>
+			{showToast && (
+				<Toast
+					message={toastMessage}
+					duration={3000} // Duration in milliseconds (3 seconds)
+					onClose={() => setShowToast(false)}
+				/>
+			)}
+			<div className="mainAreaContainer">
+				<div className={`homeContainer`}>
+					<button
+						className="connectDisconnectBtn"
+						onClick={handleConnectDisconnect}>
+						{connected ? "Connected" : "Connect"}
+					</button>
+					<div className="greetContainer">
+						<h3>Welcome {name}</h3>
+						<ContactList
+							user={userToChat}
+							sentReq={sent}
+							playCb={playReq}
+							chatCb={userToChatCb}
+						/>
+					</div>
+				</div>
+				<div className="chatAndGameContainer">
+					<ChatBox fromWhom={sentCb} user={userToChat} />
 				</div>
 			</div>
-			<div className="chatAndGameContainer">
-				<ChatBox fromWhom={sentCb} user={userToChat} />
-			</div>
-		</div>
+		</>
 	);
 };
 

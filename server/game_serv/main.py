@@ -41,6 +41,7 @@ app.add_middleware(
 
 # FOR PLAY REQUESTS
 connected_clients: Dict[str, WebSocket] = {}
+game_state = {}
 
 
 @app.websocket("/play/{player_id}")
@@ -79,17 +80,26 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
                     await connected_clients[data.get("challengerId")].send_json(
                         {
                             "decline": "offer was declined",
-                            "decliner_name": data.get("challengerName"),
+                            "decliner_name": data.get("challengeeName"),
                         }
                     )
                 else:
                     print("Accepted")
                     # ACCEPTED GAME
-                    await connected_clients[data.get("challengerId")].send_json(
-                        {
-                            "accept": "offer was accepted",
-                            "accepter_name": data.get("challengerName"),
-                        }
+                    challenger_id = data.get("challengerId")
+                    challenger_name = data.get("challengerName")
+                    player_name = data.get("challengeeName")
+
+                    # Add both players to the game state
+                    game_state[player_id] = {"name": player_name}
+                    game_state[challenger_id] = {"name": challenger_name}
+
+                    # Inform both players that the game has started
+                    await connected_clients[player_id].send_json(
+                        {"startGame": "Game has started", "gameState": game_state}
+                    )
+                    await connected_clients[challenger_id].send_json(
+                        {"startGame": "Game has started", "gameState": game_state}
                     )
 
     except WebSocketDisconnect:
