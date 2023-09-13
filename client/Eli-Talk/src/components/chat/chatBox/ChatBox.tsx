@@ -5,7 +5,7 @@ import { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
 interface Message {
 	text: string;
 	type: "sender" | "receiver";
-	room: string | null;
+	otherParty: string | null;
 }
 
 const ChatBox = (props: any) => {
@@ -38,8 +38,7 @@ const ChatBox = (props: any) => {
 			const messageGot: Message = {
 				text: receivedMessage.message,
 				type: "receiver",
-				// room: room,
-				room: receivedMessage.from,
+				otherParty: receivedMessage.from,
 			};
 			setMessages((prevMsgs) => [...prevMsgs, messageGot]);
 			props.fromWhom(receivedMessage);
@@ -63,20 +62,6 @@ const ChatBox = (props: any) => {
 		};
 	}, [myId]);
 
-	// //create unique room ids
-	// useEffect(() => {
-	// 	getRoomId();
-	// }, [props.user]);
-
-	// const getRoomId = () => {
-	// 	if (props.user && props.user.id) {
-	// 		const roomId = [myId, props.user.id].sort();
-	// 		const uniqueRoomId = roomId.join("-");
-	// 		console.log("room id: ", uniqueRoomId);
-	// 		setRoom(uniqueRoomId);
-	// 	}
-	// };
-
 	const sendMsg = async (e: BaseSyntheticEvent) => {
 		e.preventDefault();
 		if (inputValue.length > 0 && socket) {
@@ -90,8 +75,7 @@ const ChatBox = (props: any) => {
 			const mySentMessage: Message = {
 				text: inputValue,
 				type: "sender",
-				// room: room,
-				room: props.user.id,
+				otherParty: props.user.id,
 			};
 			setMessages((prevMsgs) => [...prevMsgs, mySentMessage]);
 			setInputValue("");
@@ -108,8 +92,7 @@ const ChatBox = (props: any) => {
 					{messages &&
 						messages.map(
 							(message, index) =>
-								// room === message.room &&
-								props.user.id === message.room && (
+								props.user.id === message.otherParty && (
 									<div
 										key={index}
 										className={`message ${

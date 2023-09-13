@@ -78,10 +78,10 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
 rej_connected_clients: Dict[str, WebSocket] = {}
 
 
-async def rejection_websocket_endpoint(websocket: WebSocket, rejection_to_id: str):
+@app.websocket("/play/reject/{user_rejected_id}")
+async def rejection_websocket_endpoint(websocket: WebSocket, user_rejected_id: str):
     await websocket.accept()
-    rej_connected_clients[rejection_to_id] = websocket
-
+    rej_connected_clients[user_rejected_id] = websocket
     print("Rejection clients: ", rej_connected_clients)
 
     try:
@@ -92,18 +92,46 @@ async def rejection_websocket_endpoint(websocket: WebSocket, rejection_to_id: st
             rejectee_id = data.get("rejectee_id")
             rejector_id = data.get("rejector_id")
 
-            if rejector_id == rejection_to_id:
+            # for client in rej_connected_clients.values():
+            #     await client.send_json(data)
+            print("rejectee id ", rejectee_id)
+
+            if rejectee_id == user_rejected_id:
                 # Send the rejection message to the user who initiated the request
-                recipient_websocket = rej_connected_clients[rejectee_id]
+                recipient_websocket = rej_connected_clients[user_rejected_id]
+                print(recipient_websocket)
                 await recipient_websocket.send_json(data)
-                print(f"Sent a rejection from {rejector_id} to {rejectee_id}: {data}")
+                print(
+                    f"Sent a rejection from {rejector_id} to {user_rejected_id}: {data}"
+                )
             else:
                 # Handle the case when the rejectee is not connected
-                print(f"{rejector_id} is not connected.")
+                print(f"{rejectee_id} is not connected.")
 
     except WebSocketDisconnect:
         # Remove the disconnected client from the dictionary
-        del rej_connected_clients[rejection_to_id]
+        del rej_connected_clients[rejectee_id]
+
+
+# ACCEPTED CHALENGES
+
+
+@app.websocket("/play/{challenger_id}/{opponent_id}")
+async def gameplay_websocket_endpoint(
+    websocket: WebSocket, challenger_id: str, opponent_id: str
+):
+    await websocket.accept()
+
+    while True:
+        data = await websocket.receive_json()
+
+        challenger_websocket = connected_clients[challenger_id]
+        opponent_websocket = connected_clients[opponent_id]
+
+        print(challenger_websocket)
+        print(opponent_websocket)
+
+        opponent_websocket.send_json(data)
 
 
 if __name__ == "__main__":

@@ -23,13 +23,11 @@ const Navbar = () => {
 				socket.send(
 					JSON.stringify({ type: "user_disconnect", name: `${name}` })
 				);
+				socket.close();
 			};
 			socket.onclose = () => {
 				console.log("logout sokcet closed");
 			};
-			setTimeout(() => {
-				socket.close();
-			}, 500);
 		}
 		sessionStorage.clear();
 		// setTimeout(() => {
