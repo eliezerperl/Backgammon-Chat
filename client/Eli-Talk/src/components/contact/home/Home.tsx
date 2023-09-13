@@ -16,6 +16,11 @@ const Home = () => {
 	const [sent, setSent] = useState<any>({});
 
 	const [gameSocket, setGameSocket] = useState<WebSocket | null>(null);
+	const [gameRejectionSocket, setGameRejectionSocket] =
+		useState<WebSocket | null>(null);
+	const [gameAcceptSocket, setGameAcceptSocket] = useState<WebSocket | null>(
+		null
+	);
 	const [updateSocket, setUpdateSocket] = useState<WebSocket | null>(null);
 
 	const id: string | null = getLocalItem("Id");
@@ -34,10 +39,16 @@ const Home = () => {
 		}
 	}, []);
 
-	//SOCKET CONNECTION for sending msgs to server for connectDisconnect
 	useEffect(() => {
 		// Check if id is available before creating the socket
 		if (id) {
+			//LISTEN TO ACCEPT SOCKET
+			// const acceptSocket = new WebSocket(
+			// 	`ws://localhost:9000/${id}/d8dbb913-e1ff-444d-99fc-42b86408b755`
+			// );
+			//LISTEN ON REJECTION SOCKET
+
+			//Listen on user socket
 			const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
 			socket.onmessage = () => {
@@ -117,23 +128,15 @@ const Home = () => {
 	};
 
 	const playReq = (user: any) => {
-		// const socket = new WebSocket(`ws://localhost:9000/play/${user.id}`);
-
-		setTimeout(() => {
-			gameSocket?.send(
-				JSON.stringify({
-					user_to_play_id: user.id,
-					challenger_id: id,
-					challenger_name: name,
-				})
-			);
-		}, 500);
-		//send a ws request to ws://localhost:9000/play/user.id that user will be listening
+		gameSocket?.send(
+			JSON.stringify({
+				user_to_play_id: user.id,
+				// user_to_play_name: user.name,
+				challenger_id: id,
+				challenger_name: name,
+			})
+		);
 	};
-
-	// useEffect(() => {
-
-	// }, [])
 
 	//INCOMIONG GAME REQ HANDLE
 	useEffect(() => {
@@ -145,40 +148,36 @@ const Home = () => {
 
 		newSocket.onmessage = (event) => {
 			const receivedMessage = JSON.parse(event.data);
-			//making a brief connection the closing it to send rejection msg
+			if (receivedMessage.decline) {
+				alert(`${receivedMessage.decliner_name} declined your offer`);
+				return;
+			}
+			if (receivedMessage.accept) {
+				alert(`${receivedMessage.accepter_name} accepted your offer`);
+				return;
+			}
 
 			const acceptChallenge = window.confirm(
 				`${receivedMessage.challenger_name} would like to challenge you.\nDo you want to accept?`
 			);
 			if (acceptChallenge) {
-				// User clicked "OK" (accept)
-				// Handle the acceptance logic here
-			} else {
-				const rejectionSocket = new WebSocket(
-					`ws://localhost:9000/play/reject/${receivedMessage.id}`
+				//ACEPPTED (send socket msg)
+				newSocket.send(
+					JSON.stringify({
+						action: "accept",
+						challengerName: receivedMessage.challenger_name,
+						challengerId: receivedMessage.challenger_id,
+					})
 				);
-
-				rejectionSocket.onopen = () => {
-					console.log("rejection socket open");
-					rejectionSocket.send(
-						JSON.stringify({
-							rejector_id: id,
-							rejectee_id: receivedMessage.challenger_id,
-							message: `${name} rejected your offer... sorry`,
-						})
-					);
-				};
-
-				rejectionSocket.onmessage = (rejEvent) => {
-					console.log(JSON.parse(rejEvent.data));
-				};
-
-				rejectionSocket.onclose = () => {
-					console.log("rejection socket closed");
-				};
-				setTimeout(() => {
-					rejectionSocket.close();
-				}, 500);
+			} else {
+				//DECLINED (send socket msg)
+				newSocket.send(
+					JSON.stringify({
+						action: "decline",
+						challengerName: receivedMessage.challenger_name,
+						challengerId: receivedMessage.challenger_id,
+					})
+				);
 			}
 		};
 
