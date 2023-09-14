@@ -8,6 +8,7 @@ const ContactList = (props: any) => {
 	const [allOfflineUsers, setAllOfflineUsers] = useState<any[]>([]);
 	const [allOnlineUsers, setAllOnlineUsers] = useState<any[]>([]);
 	const [modifiedUsers, setModifiedUsers] = useState<User[]>([]);
+	const [userNotRead, setUsersNotRead] = useState<string[]>([]);
 
 	const token: string | null = getLocalItem("jwtToken");
 	const id: string | null = getLocalItem("Id");
@@ -26,6 +27,7 @@ const ContactList = (props: any) => {
 			setAllOnlineUsers(onlineUsers);
 		}
 	};
+
 	useEffect(() => {
 		getUsers();
 	}, []);
@@ -43,28 +45,38 @@ const ContactList = (props: any) => {
 		};
 	}, [id]);
 
+	useEffect(() => {
+		if (props.sentReq && !userNotRead.includes(props.sentReq.from)) {
+			setUsersNotRead((prevUserNotReaded) => [
+				...prevUserNotReaded,
+				props.sentReq.from,
+			]);
+		}
+	}, [props.sentReq.from]);
+
+	useEffect(() => {
+		setModifiedUsers(
+			allOnlineUsers.map((user) => ({
+				...user,
+				alert: userNotRead.includes(user.id),
+			}))
+		);
+		console.log(userNotRead);
+	}, [allOnlineUsers, userNotRead]);
+
+	const onUserRead = (id: string) => {
+		setUsersNotRead((prevUsersNotRead) =>
+			prevUsersNotRead.filter((u) => u !== id)
+		);
+	};
+
 	const handleChatClick = (user: User) => {
 		props.chatCb({
 			id: user.id,
 			name: user.name,
 		});
+		onUserRead(user.id!);
 	};
-
-	useEffect(() => {
-		const modifiedUsers = allOnlineUsers.map((user) => ({
-			...user,
-			alert: true ? false : false,
-		}));
-		setModifiedUsers(modifiedUsers);
-	}, [props.user]);
-
-	useEffect(() => {
-		const modifiedUsers = allOnlineUsers.map((user) => ({
-			...user,
-			alert: props.sentReq.from === user.id && user.id !== props.user.id,
-		}));
-		setModifiedUsers(modifiedUsers);
-	}, [props.sentReq.from, allOnlineUsers]);
 
 	const handlePlayClick = (user: User) => {
 		props.playCb(user);

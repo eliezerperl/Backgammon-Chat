@@ -1,6 +1,9 @@
+import sys
+import time
 from typing import Dict, List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+import pygame
 
 # from routes.user_routes import router
 import uvicorn
@@ -60,6 +63,7 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
             if action is None:
                 # Check if a specific recipient is specified in the message
                 who_to_play_id = data.get("user_to_play_id")
+                who_to_play_name = data.get("user_to_play_name")
                 if who_to_play_id in connected_clients:
                     recipient_websocket = connected_clients[who_to_play_id]
                     await recipient_websocket.send_json(data)
@@ -67,12 +71,10 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
                         f"Sent a play req from {player_id} to {who_to_play_id}: {data}"
                     )
                 else:
-                    # Broadcast the message to all connected clients
-                    for client in connected_clients.values():
-                        await client.send_json(data)
-                        print(
-                            f"Sent a broadcast message from {player_id}: {who_to_play_id}"
-                        )
+                    await connected_clients[player_id].send_json(
+                        {"offline": "user is offline"}
+                    )
+                    print(f"{who_to_play_name} is offline")
             else:
                 if action == "decline":
                     print(action)
@@ -101,6 +103,33 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
                     await connected_clients[challenger_id].send_json(
                         {"startGame": "Game has started", "gameState": game_state}
                     )
+
+                    # players_list = Dict[
+                    #     connected_clients[challenger_id]: challenger_name,
+                    #     connected_clients[player_id]: player_name,
+                    # ]
+
+                    # for client in players_list:
+                    #     # Initialize Pygame and create a separate Pygame window for each client
+                    #     pygame.init()
+                    #     screen = pygame.display.set_mode(
+                    #         (800, 600)
+                    #     )  # Adjust window size as needed
+                    #     pygame.display.set_caption(
+                    #         "WebSocket Pygame Game for Player: " + player_name
+                    #     )
+
+                    #     # Run the Pygame game loop for the current client
+                    #     while True:
+                    #         for event in pygame.event.get():
+                    #             if event.type == pygame.QUIT:
+                    #                 pygame.quit()
+                    #                 sys.exit()
+
+                    #         # Update Pygame window content as needed based on the game state
+                    #         # You can use Pygame drawing functions to display game graphics
+
+                    #         pygame.display.flip()
 
     except WebSocketDisconnect:
         # Remove the disconnected client from the dictionary

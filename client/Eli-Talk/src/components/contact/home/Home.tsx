@@ -149,13 +149,22 @@ const Home = () => {
 
 		newSocket.onmessage = (event) => {
 			const receivedMessage = JSON.parse(event.data);
+			if (receivedMessage.offline) {
+				console.log("user is not connected to ws");
+				return;
+			}
 			if (receivedMessage.decline) {
-				alert(`${receivedMessage.decliner_name} declined your offer`);
+				showToastWithDuration(
+					`${receivedMessage.decliner_name} declined your offer`,
+					4000
+				);
 				return;
 			}
 			if (receivedMessage.startGame) {
 				showToastWithDuration("Game starting...", 3000);
-				console.log(receivedMessage);
+				setTimeout(() => {
+					console.log(receivedMessage);
+				}, 3000);
 				return;
 			}
 
