@@ -46,7 +46,12 @@ const ContactList = (props: any) => {
 	}, [id]);
 
 	useEffect(() => {
-		if (props.sentReq && !userNotRead.includes(props.sentReq.from)) {
+		if (
+			props.sentReq &&
+			!userNotRead.includes(props.sentReq.from) &&
+			Object.keys(props.sentReq).length > 0
+		) {
+			debugger;
 			setUsersNotRead((prevUserNotReaded) => [
 				...prevUserNotReaded,
 				props.sentReq.from,
