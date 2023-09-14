@@ -30,13 +30,11 @@ const Navbar = () => {
 			};
 		}
 		sessionStorage.clear();
-		// setTimeout(() => {
 		navigate("/");
-		// }, 500);
 	};
 
-	const authedItem: string | null = getLocalItem("Authenticated");
-	if (!authedItem) {
+	const authed: string | null = getLocalItem("Authenticated");
+	if (!authed) {
 		return <nav className="notAuthed">Not Authenticated</nav>;
 	}
 	return (

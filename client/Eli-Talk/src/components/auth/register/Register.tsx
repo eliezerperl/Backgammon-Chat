@@ -57,9 +57,8 @@ const Register = () => {
 	const onChange = (e: BaseSyntheticEvent) => {
 		setValues({ ...values, [e.target.name]: e.target.value });
 	};
-	console.log(values);
 	return (
-		<div>
+		<div className="registerPageContainer">
 			<h1>Register</h1>
 			<form className="registerContainer" onSubmit={handleRegister}>
 				{formInputs.map((input: any) => (

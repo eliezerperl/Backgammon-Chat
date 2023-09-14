@@ -1,7 +1,5 @@
 import setLocalItem from "../sessionStorage/setLocalItem";
 
-let userData : any = ''
-
 async function checkLogin(data : any) {
   try {
     const res = await fetch('http://127.0.0.1:5000/login', {
@@ -14,7 +12,7 @@ async function checkLogin(data : any) {
         if (!res.ok){
           throw new Error("Did not login");
         }
-        userData = await res.json();
+        const userData = await res.json();
         setLocalItem('jwtToken', userData["token"])
         setLocalItem('Id', userData["id"])
         setLocalItem('Name', userData["name"])

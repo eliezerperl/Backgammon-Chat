@@ -1,4 +1,8 @@
 .loginPageContainer {
+	border: 1px solid black;
+	padding: 10px 70px;
+	border-radius: 10px;
+	box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.6);
 }
 
 .loginContainer {
@@ -18,13 +22,26 @@
 	font-size: 14px;
 }
 
-.singleEmail {
+.emailInputContainer {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+#emailInput:focus {
+	border-bottom-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+}
+
+.emailListContainer {
 	position: absolute;
-	margin-top: 67px;
-	margin-left: 20px;
 	z-index: 1;
+	top: 62px;
+}
+.singleEmail {
 	background-color: white;
 	border: 1px solid #ccc;
+	padding: 0px 30px;
 }
 
 .singleEmail:hover {

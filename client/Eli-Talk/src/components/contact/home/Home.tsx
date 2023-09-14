@@ -49,7 +49,7 @@ const Home = () => {
 	useEffect(() => {
 		// Check if id is available before creating the socket
 		if (id) {
-			//Listen on user socket
+			//Listen on update users socket
 			const socket = new WebSocket(`ws://localhost:5555/updateusers`);
 
 			socket.onmessage = () => {
@@ -61,7 +61,6 @@ const Home = () => {
 			};
 			setUpdateSocket(socket);
 
-			// Cleanup the WebSocket connection on unmount
 			return () => {
 				if (socket) {
 					socket.close();
@@ -79,7 +78,7 @@ const Home = () => {
 					setLocalItem("Connected", "true");
 					setLocalItem("jwtToken", res);
 					setConnected(true);
-					// Send the connect message to the server using the existing WebSocket connection
+
 					updateSocket?.send(
 						JSON.stringify({ type: "user_connect", name: `${name}` })
 					);
@@ -91,7 +90,7 @@ const Home = () => {
 					await Disconnect(token);
 					setLocalItem("Connected", "false");
 					setConnected(false);
-					// Send the disconnect message to the server using the existing WebSocket connection
+
 					updateSocket?.send(
 						JSON.stringify({ type: "user_disconnect", name: `${name}` })
 					);
@@ -102,8 +101,8 @@ const Home = () => {
 		}
 	};
 
+	//REQUEST TO CHAT WITH USER CLICKED ON
 	const userToChatCb = async (dataFromChild: any) => {
-		//REQUEST TO CHAT WITH USER CLICKED ON
 		try {
 			const res = await fetch(
 				`http://localhost:8000/chat/${dataFromChild.id}`,
@@ -217,7 +216,7 @@ const Home = () => {
 			{showToast && (
 				<Toast
 					message={toastMessage}
-					duration={3000} // Duration in milliseconds (3 seconds)
+					duration={3000}
 					onClose={() => setShowToast(false)}
 				/>
 			)}

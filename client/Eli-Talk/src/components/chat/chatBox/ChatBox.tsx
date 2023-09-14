@@ -26,7 +26,6 @@ const ChatBox = (props: any) => {
 
 	//INCOMIONG MSG HANDLE
 	useEffect(() => {
-		// Create and open the WebSocket connection
 		const newSocket = new WebSocket(`ws://localhost:8000/message/${myId}`);
 		newSocket.onopen = () => {
 			console.log("msg WebSocket connection is open.");
@@ -54,7 +53,6 @@ const ChatBox = (props: any) => {
 
 		setSocket(newSocket);
 
-		// Cleanup the WebSocket connection on unmount
 		return () => {
 			if (newSocket) {
 				newSocket.close();

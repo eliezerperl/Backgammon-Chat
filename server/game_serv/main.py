@@ -60,10 +60,10 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
             data = await websocket.receive_json()
 
             action = data.get("action")
+            who_to_play_id = data.get("user_to_play_id")
+            who_to_play_name = data.get("user_to_play_name")
             if action is None:
                 # Check if a specific recipient is specified in the message
-                who_to_play_id = data.get("user_to_play_id")
-                who_to_play_name = data.get("user_to_play_name")
                 if who_to_play_id in connected_clients:
                     recipient_websocket = connected_clients[who_to_play_id]
                     await recipient_websocket.send_json(data)
