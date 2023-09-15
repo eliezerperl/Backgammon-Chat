@@ -155,7 +155,7 @@ const Home = () => {
 			if (receivedMessage.decline) {
 				showToastWithDuration(
 					`${receivedMessage.decliner_name} declined your offer`,
-					4000
+					3000
 				);
 				return;
 			}
@@ -203,7 +203,6 @@ const Home = () => {
 
 		setGameSocket(newSocket);
 
-		// Cleanup the WebSocket connection on unmount
 		return () => {
 			if (newSocket) {
 				newSocket.close();
@@ -230,7 +229,6 @@ const Home = () => {
 					<div className="greetContainer">
 						<h3>Welcome {name}</h3>
 						<ContactList
-							user={userToChat}
 							sentReq={sent}
 							playCb={playReq}
 							chatCb={userToChatCb}

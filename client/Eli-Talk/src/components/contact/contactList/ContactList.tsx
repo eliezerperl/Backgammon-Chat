@@ -51,7 +51,6 @@ const ContactList = (props: any) => {
 			!userNotRead.includes(props.sentReq.from) &&
 			Object.keys(props.sentReq).length > 0
 		) {
-			debugger;
 			setUsersNotRead((prevUserNotReaded) => [
 				...prevUserNotReaded,
 				props.sentReq.from,
