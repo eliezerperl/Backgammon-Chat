@@ -8,6 +8,7 @@ import Navbar from "./components/reusable/Navbar/Navbar";
 import Footer from "./components/reusable/footer/Footer";
 import setLocalItem from "./utils/sessionStorage/setLocalItem";
 import getLocalItem from "./utils/sessionStorage/getLocalItem";
+import GameBoard from "./components/game/GameBoard";
 
 function App() {
 	const authed: string | null = getLocalItem("Authenticated");
@@ -29,6 +30,7 @@ function App() {
 								<Route path="/" Component={Login} />
 								<Route path="/register" Component={Register} />
 								<Route path="/home" Component={Home} />
+								<Route path="/play" Component={GameBoard} />
 							</Routes>
 						</div>
 					</div>

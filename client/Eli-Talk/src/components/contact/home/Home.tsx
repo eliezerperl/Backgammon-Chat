@@ -8,12 +8,14 @@ import Disconnect from "@/utils/users/Disconnect";
 import ContactList from "../contactList/ContactList";
 import ChatBox from "@/components/chat/chatBox/ChatBox";
 import Toast from "@/components/reusable/toast/Toast";
+import GameBoard from "@/components/game/GameBoard";
 
 const Home = () => {
 	const navigate = useNavigate();
 	const [connected, setConnected] = useState<boolean>(false);
 	const [toastMessage, setToastMessage] = useState<string>("");
 	const [showToast, setShowToast] = useState<boolean>(false);
+	const [showGameBoard, setShowGameBoard] = useState<boolean>(false);
 
 	const [userToChat, setUserToChat] = useState(null);
 	const [sent, setSent] = useState<any>({});
@@ -163,6 +165,7 @@ const Home = () => {
 				showToastWithDuration("Game starting...", 3000);
 				setTimeout(() => {
 					console.log(receivedMessage);
+					navigate("/play");
 				}, 3000);
 				return;
 			}
@@ -210,37 +213,42 @@ const Home = () => {
 		};
 	}, [id]);
 
-	return (
-		<>
-			{showToast && (
-				<Toast
-					message={toastMessage}
-					duration={3000}
-					onClose={() => setShowToast(false)}
-				/>
-			)}
-			<div className="mainAreaContainer">
-				<div className={`homeContainer`}>
-					<button
-						className="connectDisconnectBtn"
-						onClick={handleConnectDisconnect}>
-						{connected ? "Connected" : "Connect"}
-					</button>
-					<div className="greetContainer">
-						<h3>Welcome {name}</h3>
-						<ContactList
-							sentReq={sent}
-							playCb={playReq}
-							chatCb={userToChatCb}
-						/>
+	if (!showGameBoard) {
+		return (
+			<>
+				{showToast && (
+					<Toast
+						message={toastMessage}
+						duration={3000}
+						onClose={() => setShowToast(false)}
+					/>
+				)}
+				<div className="mainAreaContainer">
+					<div className={`homeContainer`}>
+						<button
+							className="connectDisconnectBtn"
+							onClick={handleConnectDisconnect}>
+							{connected ? "Connected" : "Connect"}
+						</button>
+						<div className="greetContainer">
+							<h3>Welcome {name}</h3>
+							<ContactList
+								user={userToChat}
+								sentReq={sent}
+								playCb={playReq}
+								chatCb={userToChatCb}
+							/>
+						</div>
+					</div>
+					<div className="chatAndGameContainer">
+						<ChatBox fromWhom={sentCb} user={userToChat} />
 					</div>
 				</div>
-				<div className="chatAndGameContainer">
-					<ChatBox fromWhom={sentCb} user={userToChat} />
-				</div>
-			</div>
-		</>
-	);
+			</>
+		);
+	} else {
+		return <GameBoard />;
+	}
 };
 
 export default Home;

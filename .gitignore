@@ -26,5 +26,6 @@ release
 *.sw?
 
 #python
+venv
 config
 __pycache__
