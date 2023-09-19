@@ -1,16 +1,10 @@
 import "./Actions.css";
 
-const FormInput = (props: any) => {
-	//ACTION REQUESTS
-
-	//END ACTION REQUESTS
+const Actions = (props: any) => {
 	return (
 		<>
 			<div className="action" onClick={props.onClick}>
-				Chat
-			</div>
-			<div className="action" onClick={props.onClick}>
-				Play
+				Play Random
 			</div>
 			<div className="action" onClick={props.onClick}>
 				Help
@@ -19,4 +13,4 @@ const FormInput = (props: any) => {
 	);
 };
 
-export default FormInput;
+export default Actions;
