@@ -22,29 +22,8 @@ app.add_middleware(
 
 # app.include_router(router)
 
-# connected_clients: List[WebSocket] = []
-
-# @app.websocket('/message/{recv_id}')
-# async def websocket_endpoint(websocket: WebSocket):
-#     await websocket.accept()
-#     connected_clients.append(websocket)
-
-#     try:
-#         while True:
-#             data = await websocket.receive_json()
-
-#             # Broadcast the received data to all connected clients
-#             for client in connected_clients:
-#                 await client.send_json(data)
-#                 print('sent: ', data)
-#     except WebSocketDisconnect:
-#         # Remove the disconnected client from the list
-#         connected_clients.remove(websocket)
-
-
 # FOR PLAY REQUESTS
 connected_clients: Dict[str, WebSocket] = {}
-game_state = {}
 
 
 @app.websocket("/play/{player_id}")
@@ -92,108 +71,56 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
                     challenger_name = data.get("challengerName")
                     player_name = data.get("challengeeName")
 
-                    # Add both players to the game state
-                    game_state[player_id] = {"name": player_name}
-                    game_state[challenger_id] = {"name": challenger_name}
-
                     # Inform both players that the game has started
                     await connected_clients[player_id].send_json(
-                        {"startGame": "Game has started", "gameState": game_state}
+                        {
+                            "startGame": "Game has started",
+                            "playing_against": {
+                                "id": challenger_id,
+                                "name": challenger_name,
+                            },
+                        }
                     )
                     await connected_clients[challenger_id].send_json(
-                        {"startGame": "Game has started", "gameState": game_state}
+                        {
+                            "startGame": "Game has started",
+                            "playing_against": {"id": player_id, "name": player_name},
+                        }
                     )
-
-                    # players_list = Dict[
-                    #     connected_clients[challenger_id]: challenger_name,
-                    #     connected_clients[player_id]: player_name,
-                    # ]
-
-                    # for client in players_list:
-                    #     # Initialize Pygame and create a separate Pygame window for each client
-                    #     pygame.init()
-                    #     screen = pygame.display.set_mode(
-                    #         (800, 600)
-                    #     )  # Adjust window size as needed
-                    #     pygame.display.set_caption(
-                    #         "WebSocket Pygame Game for Player: " + player_name
-                    #     )
-
-                    #     # Run the Pygame game loop for the current client
-                    #     while True:
-                    #         for event in pygame.event.get():
-                    #             if event.type == pygame.QUIT:
-                    #                 pygame.quit()
-                    #                 sys.exit()
-
-                    #         # Update Pygame window content as needed based on the game state
-                    #         # You can use Pygame drawing functions to display game graphics
-
-                    #         pygame.display.flip()
 
     except WebSocketDisconnect:
         # Remove the disconnected client from the dictionary
-        del connected_clients[who_to_play_id]
+        if who_to_play_id is not None:
+            del connected_clients[who_to_play_id]
+        # pass
 
 
-# FOR REJECTIONS
-# rej_connected_clients: Dict[str, WebSocket] = {}
+# FOR GAMEPLAY
+playing_clients: Dict[str, WebSocket] = {}
+game_state = {}
 
 
-# @app.websocket("/play/reject/{user_rejected_id}")
-# async def rejection_websocket_endpoint(websocket: WebSocket, user_rejected_id: str):
-#     await websocket.accept()
-#     rej_connected_clients[user_rejected_id] = websocket
-#     print("Rejection clients: ", rej_connected_clients)
+@app.websocket("/gameplay/{my_id}/{playing_room_id}")
+async def gameplay_websocket_endpoint(websocket: WebSocket, my_id: str):
+    await websocket.accept()
+    # # Store the WebSocket connection with its who_to_play_id
+    playing_clients[my_id] = websocket
 
-#     try:
-#         while True:
-#             data = await websocket.receive_json()
+    print("gamrplay clients", playing_clients)
 
-#             # Check if a specific recipient is specified in the message
-#             rejectee_id = data.get("rejectee_id")
-#             rejector_id = data.get("rejector_id")
+    try:
+        while True:
+            data = await websocket.receive_json()
 
-#             # for client in rej_connected_clients.values():
-#             #     await client.send_json(data)
-#             print("rejectee id ", rejectee_id)
+            # OTHER PLAYER QUIT
+            quit = data.get("quit")
+            if quit is not None:
+                for ws in playing_clients.values():
+                    await ws.send_json(quit)
 
-#             if rejectee_id == user_rejected_id:
-#                 # Send the rejection message to the user who initiated the request
-#                 recipient_websocket = rej_connected_clients[user_rejected_id]
-#                 print(recipient_websocket)
-#                 await recipient_websocket.send_json(data)
-#                 print(
-#                     f"Sent a rejection from {rejector_id} to {user_rejected_id}: {data}"
-#                 )
-#             else:
-#                 # Handle the case when the rejectee is not connected
-#                 print(f"{rejectee_id} is not connected.")
-
-#     except WebSocketDisconnect:
-#         # Remove the disconnected client from the dictionary
-#         del rej_connected_clients[rejectee_id]
-
-
-# # ACCEPTED CHALENGES
-
-
-# @app.websocket("/play/{challenger_id}/{opponent_id}")
-# async def gameplay_websocket_endpoint(
-#     websocket: WebSocket, challenger_id: str, opponent_id: str
-# ):
-#     await websocket.accept()
-
-#     while True:
-#         data = await websocket.receive_json()
-
-#         challenger_websocket = connected_clients[challenger_id]
-#         opponent_websocket = connected_clients[opponent_id]
-
-#         print(challenger_websocket)
-#         print(opponent_websocket)
-
-#         opponent_websocket.send_json(data)
+    except WebSocketDisconnect:
+        # Remove the disconnected client from the dictionary
+        del playing_clients[my_id]
 
 
 if __name__ == "__main__":

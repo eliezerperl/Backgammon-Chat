@@ -11,3 +11,7 @@
 	background-color: black;
 	color: azure;
 }
+
+.navUserName {
+	cursor: default;
+}
