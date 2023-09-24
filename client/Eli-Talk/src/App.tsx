@@ -25,14 +25,14 @@ function App() {
 				<HashRouter>
 					<Navbar />
 					<div className="contentContainer">
-						<div className="appContainer">
-							<Routes>
-								<Route path="/" Component={Login} />
-								<Route path="/register" Component={Register} />
-								<Route path="/home" Component={Home} />
-								<Route path="/play" Component={GameBoard} />
-							</Routes>
-						</div>
+						{/* <div className="appContainer"> */}
+						<Routes>
+							<Route path="/" Component={Login} />
+							<Route path="/register" Component={Register} />
+							<Route path="/home" Component={Home} />
+							<Route path="/play" Component={GameBoard} />
+						</Routes>
+						{/* </div> */}
 					</div>
 					<Footer />
 				</HashRouter>

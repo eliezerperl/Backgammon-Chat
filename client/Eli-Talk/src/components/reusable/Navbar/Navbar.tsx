@@ -6,6 +6,7 @@ import Disconnect from "@/utils/users/Disconnect";
 
 const Navbar = () => {
 	const navigate = useNavigate();
+	const name: string | null = getLocalItem("Name");
 
 	const logout = async () => {
 		const connected: string | null = getLocalItem("Connected");
@@ -40,6 +41,7 @@ const Navbar = () => {
 	return (
 		<div>
 			<nav className="actionsContainer">
+				<div className="navUserName">{name}</div>
 				<Actions />
 				<button onClick={logout}>Logout</button>
 			</nav>
