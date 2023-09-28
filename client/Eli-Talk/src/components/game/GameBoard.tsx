@@ -4,6 +4,21 @@ import { useNavigate } from "react-router";
 import getLocalItem from "@/utils/sessionStorage/getLocalItem";
 import deleteLocalItem from "@/utils/sessionStorage/deleteLocalItem";
 
+// interface Point {
+// 	color: "none" | "white" | "black";
+// 	count: number;
+// }
+
+// interface GameState {
+// 	board: {
+// 		points: Point[];
+// 	};
+// }
+
+// interface Props {
+// 	gameState: GameState;
+// }{ gameState }: Props
+
 const GameBoard = () => {
 	const navigate = useNavigate();
 	const [gameplaySocket, setGameplaySocket] = useState<WebSocket | null>(null);
@@ -19,7 +34,7 @@ const GameBoard = () => {
 			const unsorted: string[] = [id, playingId];
 			const roomId: string = unsorted.sort().join();
 			const socket = new WebSocket(
-				`ws://localhost:9000/gameplay/${id}/${roomId}`
+				`ws://localhost:9000/gameplay/${id}/${playingId}`
 			);
 
 			socket.onopen = () => {
@@ -28,7 +43,7 @@ const GameBoard = () => {
 
 			socket.onmessage = (event) => {
 				const msg = JSON.parse(event.data);
-				if (msg === "quit") {
+				if (msg.quitter) {
 					alert(`${playingName} has quit the game`);
 				}
 			};
@@ -50,12 +65,21 @@ const GameBoard = () => {
 	const handleCloseGame = () => {
 		deleteLocalItem("currentlyAgainstId");
 		deleteLocalItem("currentlyAgainstName");
-		gameplaySocket?.send(JSON.stringify({ quit: "quit" }));
+		gameplaySocket?.send(JSON.stringify({ quit: "quit", quitter: id }));
 		navigate("/home");
 	};
 
 	return (
 		<div className="gameContainer">
+			{/* <div className="board">
+				{gameState.board.points.map((point: Point, index: number) => (
+					<div className="point" key={index}>
+						{point.count > 0 && (
+							<div className={`piece ${point.color}`}>{point.count}</div>
+						)}
+					</div>
+				))}
+			</div> */}
 			<div className="board">
 				<div className="halfBoard">
 					<div className="point"></div>

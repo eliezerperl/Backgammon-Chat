@@ -1,9 +1,6 @@
-import sys
-import time
-from typing import Dict, List
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-import pygame
+from typing import Dict
 
 # from routes.user_routes import router
 import uvicorn
@@ -97,11 +94,16 @@ async def websocket_endpoint(websocket: WebSocket, player_id: str):
 
 # FOR GAMEPLAY
 playing_clients: Dict[str, WebSocket] = {}
-game_state = {}
+game_state = {
+    "current_player": "white",  # Set the initial player
+    "dice": [1, 1],  # You can initialize with two dice rolls
+}
 
 
-@app.websocket("/gameplay/{my_id}/{playing_room_id}")
-async def gameplay_websocket_endpoint(websocket: WebSocket, my_id: str):
+@app.websocket("/gameplay/{my_id}/{playing_id}")
+async def gameplay_websocket_endpoint(
+    websocket: WebSocket, my_id: str, playing_id: str
+):
     await websocket.accept()
     # # Store the WebSocket connection with its who_to_play_id
     playing_clients[my_id] = websocket
@@ -112,11 +114,14 @@ async def gameplay_websocket_endpoint(websocket: WebSocket, my_id: str):
         while True:
             data = await websocket.receive_json()
 
-            # OTHER PLAYER QUIT
-            quit = data.get("quit")
-            if quit is not None:
-                for ws in playing_clients.values():
-                    await ws.send_json(quit)
+            # OTHER PLAYER QUIT LEGALLY(X button)
+            quitter_id = data.get("quitter")
+            if quitter_id is not None and playing_id in playing_clients.keys():
+                await playing_clients[playing_id].send_json({"quitter": quitter_id})
+
+            # OTHER PLAYER QUIT ILLEGALLY(Logout or close browser)
+
+            # Move pieces
 
     except WebSocketDisconnect:
         # Remove the disconnected client from the dictionary
