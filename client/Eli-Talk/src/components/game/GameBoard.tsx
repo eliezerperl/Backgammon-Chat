@@ -46,6 +46,7 @@ const GameBoard = () => {
 				if (msg.quitter) {
 					alert(`${playingName} has quit the game`);
 				}
+				navigate("/home");
 			};
 
 			socket.onclose = async () => {
