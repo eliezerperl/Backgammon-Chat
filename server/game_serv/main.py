@@ -114,16 +114,11 @@ async def gameplay_websocket_endpoint(
         while True:
             data = await websocket.receive_json()
 
-            # OTHER PLAYER QUIT LEGALLY(X button)
-            quitter_id = data.get("quitter")
-            if quitter_id is not None and playing_id in playing_clients.keys():
-                await playing_clients[playing_id].send_json({"quitter": quitter_id})
-
-            # OTHER PLAYER QUIT ILLEGALLY(Logout or close browser)
-
             # Move pieces
 
     except WebSocketDisconnect:
+        # OTHER PLAYER QUIT  NOTIFY OTHER PLAYER
+        await playing_clients[playing_id].send_json({"quitter": my_id})
         # Remove the disconnected client from the dictionary
         del playing_clients[my_id]
 
