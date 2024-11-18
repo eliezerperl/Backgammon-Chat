@@ -1,5 +1,5 @@
 async function registerUser(data: any) {
-  const res = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/register`, {
+  const res = await fetch(`${import.meta.env.VITE_AUTH_SERVER_BASE_URL}/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

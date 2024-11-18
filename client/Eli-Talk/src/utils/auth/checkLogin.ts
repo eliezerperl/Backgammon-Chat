@@ -2,7 +2,7 @@ import setLocalItem from "../sessionStorage/setLocalItem";
 
 async function checkLogin(data : any) {
   try {
-    const res = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/login`, {
+    const res = await fetch(`${import.meta.env.VITE_AUTH_SERVER_BASE_URL}/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -20,7 +20,7 @@ async function checkLogin(data : any) {
         setLocalItem('Authenticated', 'true')
         setLocalItem('Connected', 'false')
         
-        const rerouteRes = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/home`, {
+        const rerouteRes = await fetch(`${import.meta.env.VITE_AUTH_SERVER_BASE_URL}/home`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${userData["token"]}`
