@@ -70,7 +70,7 @@ async def broadcast_user_status_change(user_name: str, is_connected: bool):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins='http://localhost:5173',
+    allow_origins=['http://localhost:5173', "https://backgammon-chat.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
