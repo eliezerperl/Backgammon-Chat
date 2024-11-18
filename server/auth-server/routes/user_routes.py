@@ -28,7 +28,7 @@ async def Register(user: User):
     # Serialize the user object to JSON
     user_json = json.dumps(user.model_dump())  # Assuming User is a Pydantic model
 
-    async with websockets.connect("ws://contact-backgammon-chat.vercel.app/updatenewuser") as websocket:
+    async with websockets.connect("wss://contact-backgammon-chat.vercel.app/updatenewuser") as websocket:
         await websocket.send(user_json)
     return JSONResponse(status_code=status.HTTP_201_CREATED, content="User was created.")
 
