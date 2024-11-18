@@ -13,6 +13,7 @@ dist-ssr
 dist-electron
 release
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
@@ -27,5 +28,4 @@ release
 
 #python
 venv
-config
 __pycache__
